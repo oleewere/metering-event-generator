@@ -1,0 +1,8 @@
+{
+    "clusterCrn": "arn:someresource:dataware:us-west-1",
+    "instances": [{
+        "id": "i-08615be7343953976",
+        "type": "m5.4xlarge",
+        "ipAddress": "111.222.333.1"
+    }]
+}

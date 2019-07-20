@@ -15,6 +15,11 @@
 package producer
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/go-ini/ini"
 	"github.com/sirupsen/logrus"
 )
@@ -26,6 +31,7 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 		return MeteringEventProducer{}, err
 	}
 	globalSettings := cfg.Section("global")
+	timestampField := globalSettings.Key("timestampField").String()
 	eventIDField := globalSettings.Key("eventIdField").String()
 	eventInterval, _ := globalSettings.Key("eventInterval").Int()
 
@@ -36,5 +42,39 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 		fields[field.Name()] = field.Value()
 	}
 
-	return MeteringEventProducer{EventIDField: eventIDField, EventInerval: eventInterval, Fields: fields}, nil
+	embeddedJSONFieldMapFiles := cfg.Section("embedded_json_fields:map")
+	embeddedJSONFieldMapKeys := embeddedJSONFieldMapFiles.Keys()
+	for _, field := range embeddedJSONFieldMapKeys {
+		fileName := field.Value()
+		jsonFile, err := os.Open(fileName)
+		defer jsonFile.Close()
+		if err != nil {
+			fmt.Println(err)
+			jsonFile.Close()
+			os.Exit(1)
+		}
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		var result map[string]interface{}
+		json.Unmarshal([]byte(byteValue), &result)
+		fields[field.Name()] = result
+	}
+
+	embeddedJSONFieldArrayFiles := cfg.Section("embedded_json_fields:array")
+	embeddedJSONFieldArrayKeys := embeddedJSONFieldArrayFiles.Keys()
+	for _, field := range embeddedJSONFieldArrayKeys {
+		fileName := field.Value()
+		jsonFile, err := os.Open(fileName)
+		defer jsonFile.Close()
+		if err != nil {
+			fmt.Println(err)
+			jsonFile.Close()
+			os.Exit(1)
+		}
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		var result []interface{}
+		json.Unmarshal([]byte(byteValue), &result)
+		fields[field.Name()] = result
+	}
+
+	return MeteringEventProducer{EventIDField: eventIDField, EventInerval: eventInterval, TimestampField: timestampField, Fields: fields}, nil
 }
