@@ -1,0 +1,47 @@
+builds:
+- main: cmd/meteringp/main.go
+  binary: meteringp
+  goos:
+  - linux
+  - darwin
+  - windows
+  goarch:
+  - amd64
+  ldflags:
+  - -s -X main.Version={{.Version}} -X main.GitRevString={{.Commit}}
+  env:
+  - CGO_ENABLED=0
+archive:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  replacements:
+    amd64: 64-bit
+    386: 32-bit
+    darwin: macOS
+  format_overrides:
+    - goos: windows
+      format: zip
+checksum:
+  name_template: 'SHA256.txt'
+snapshot:
+  name_template: SNAPSHOT-{{.Commit}}
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+brew:
+  name: meteringp
+  github:
+    owner: oleewere
+    name: homebrew-repo
+  commit_author:
+    name: oleewere
+    email: oleewere@gmail.com
+  folder: Formula
+  homepage: "https://github.com/oleewere"
+  description: "Software for generating metering events."
+  test: |
+    system "#{bin}/meteringp --version"
+  install: |
+    bin.install "meretingp"
