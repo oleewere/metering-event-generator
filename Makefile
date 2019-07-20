@@ -16,10 +16,10 @@ else
 endif
 
 build:
-	go build -ldflags "-X main.GitRevString=$(GIT_REV_SHORT) -X main.Version=$(VERSION_FOR_BUILD)" -o meteringp cmd/meteringp/main.go
+	go build -ldflags "-X main.GitRevString=$(GIT_REV_SHORT) -X main.Version=$(VERSION_FOR_BUILD)" -o meteringp
 
 install:
-	go install -ldflags "-X main.GitRevString=$(GIT_REV_SHORT) -X main.Version=$(VERSION_FOR_BUILD)" meteringp cmd/meteringp/main.go
+	go install -ldflags "-X main.GitRevString=$(GIT_REV_SHORT) -X main.Version=$(VERSION_FOR_BUILD)"
 
 test:
 	go test

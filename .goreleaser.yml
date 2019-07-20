@@ -1,5 +1,5 @@
 builds:
-- main: cmd/meteringp/main.go
+- main: main.go
   binary: meteringp
   goos:
   - linux
