@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -46,6 +47,7 @@ type MeteringEventProducer struct {
 	EventIDField      string
 	TimestampField    string
 	IDGeneratorFields []string
+	FieldCommandPairs map[string]string
 }
 
 // Run start metering event producer
@@ -64,7 +66,22 @@ func (p *MeteringEventProducer) Run() {
 		fields := p.Fields
 		fields[p.EventIDField] = uuid.NewV4()
 		fields[p.TimestampField] = time.Now().Unix()
-		log.WithFields(p.Fields).Info()
+		if len(p.FieldCommandPairs) > 0 {
+			for field, command := range p.FieldCommandPairs {
+				splitted := strings.Split(command, " ")
+				var output string
+				var err error
+				if len(splitted) == 1 {
+					output, _, err = RunLocalCommand(splitted[0])
+				} else {
+					output, _, err = RunLocalCommand(splitted[0], splitted[1:]...)
+				}
+				if err == nil {
+					fields[field] = output
+				}
+			}
+		}
+		log.WithFields(fields).Info()
 		duration := int64(p.EventInerval) * int64(time.Second)
 		time.Sleep(time.Duration(duration))
 	}

@@ -40,6 +40,13 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 		logFile = globalSettings.Key("logFile").String()
 	}
 
+	commandOutputFieldsSection := cfg.Section("command_output_fields")
+	commandOutputFieldsKeyValues := commandOutputFieldsSection.Keys()
+	commandOutputFields := make(map[string]string)
+	for _, commandOutputField := range commandOutputFieldsKeyValues {
+		commandOutputFields[commandOutputField.Name()] = commandOutputField.Value()
+	}
+
 	fieldsSettings := cfg.Section("fields")
 	fieldKeyValues := fieldsSettings.Keys()
 	fields := make(logrus.Fields)
@@ -82,5 +89,5 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 	}
 
 	return MeteringEventProducer{UseLogFile: useLogFile, LogFile: logFile, EventIDField: eventIDField,
-		EventInerval: eventInterval, TimestampField: timestampField, Fields: fields}, nil
+		EventInerval: eventInterval, TimestampField: timestampField, Fields: fields, FieldCommandPairs: commandOutputFields}, nil
 }
