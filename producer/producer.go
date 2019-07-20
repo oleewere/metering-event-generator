@@ -39,6 +39,8 @@ func (f *MeteringJSONFormatter) Format(entry *log.Entry) ([]byte, error) {
 
 // MeteringEventProducer metering producer type which holds required configuration
 type MeteringEventProducer struct {
+	UseLogFile        bool
+	LogFile           string
 	EventInerval      int
 	Fields            log.Fields
 	EventIDField      string
@@ -49,7 +51,15 @@ type MeteringEventProducer struct {
 // Run start metering event producer
 func (p *MeteringEventProducer) Run() {
 	log.SetFormatter(new(MeteringJSONFormatter))
-	log.SetOutput(os.Stdout)
+	if p.UseLogFile {
+		logFile, err := os.OpenFile(p.LogFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+		if err != nil {
+			os.Exit(1)
+		}
+		log.SetOutput(logFile)
+	} else {
+		log.SetOutput(os.Stdout)
+	}
 	for {
 		fields := p.Fields
 		fields[p.EventIDField] = uuid.NewV4()

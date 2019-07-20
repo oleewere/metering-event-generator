@@ -34,6 +34,11 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 	timestampField := globalSettings.Key("timestampField").String()
 	eventIDField := globalSettings.Key("eventIdField").String()
 	eventInterval, _ := globalSettings.Key("eventInterval").Int()
+	useLogFile, _ := globalSettings.Key("useLogFile").Bool()
+	logFile := ""
+	if useLogFile {
+		logFile = globalSettings.Key("logFile").String()
+	}
 
 	fieldsSettings := cfg.Section("fields")
 	fieldKeyValues := fieldsSettings.Keys()
@@ -76,5 +81,6 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 		fields[field.Name()] = result
 	}
 
-	return MeteringEventProducer{EventIDField: eventIDField, EventInerval: eventInterval, TimestampField: timestampField, Fields: fields}, nil
+	return MeteringEventProducer{UseLogFile: useLogFile, LogFile: logFile, EventIDField: eventIDField,
+		EventInerval: eventInterval, TimestampField: timestampField, Fields: fields}, nil
 }
