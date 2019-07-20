@@ -44,4 +44,4 @@ brew:
   test: |
     system "#{bin}/meteringp --version"
   install: |
-    bin.install "meretingp"
+    bin.install "meteringp"
