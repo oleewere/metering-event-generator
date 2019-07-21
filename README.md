@@ -19,13 +19,13 @@ brew install meteringp
 
 Using wget:
 ```bash
-METERINGP_VERSION=0.1.0
+METERINGP_VERSION=0.2.0
 wget -qO- "https://github.com/oleewere/meteringp/releases/download/v${METERINGP_VERSION}/meteringp_${METERINGP_VERSION}_linux_64-bit.tar.gz" | tar -C /usr/bin -zxv meteringp
 ```
 
 Using curl:
 ```bash
-METERINGP_VERSION=0.1.0
+METERINGP_VERSION=0.2.0
 curl -L -s "https://github.com/oleewere/meteringp/releases/download/v${METERINGP_VERSION}/meteringp_${METERINGP_VERSION}_linux_64-bit.tar.gz" | tar -C /usr/bin -xzv meteringp
 ```
 
