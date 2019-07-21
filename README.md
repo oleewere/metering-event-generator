@@ -31,8 +31,17 @@ curl -L -s "https://github.com/oleewere/meteringp/releases/download/v${METERINGP
 
 ## Usage
 
+## Examples
+
 ```bash
-meteringp --config meteringp.conf
+meteringp --config sample/meteringp.conf
+```
+
+Using with docker:
+
+```bash
+docker build -t oleewere/meteringp .
+docker run --rm oleewere/meteringp --config /sample/meteringp.conf
 ```
 
 See sample folder to check the configuration options.
