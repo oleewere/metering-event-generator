@@ -34,10 +34,17 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 	timestampField := globalSettings.Key("timestampField").String()
 	eventIDField := globalSettings.Key("eventIdField").String()
 	eventInterval, _ := globalSettings.Key("eventInterval").Int()
-	useLogFile, _ := globalSettings.Key("useLogFile").Bool()
-	logFile := ""
-	if useLogFile {
-		logFile = globalSettings.Key("logFile").String()
+
+	fileLogger := MeteringEventFileLogger{}
+	fileLoggerSettings := cfg.Section("log_file")
+	fileLoggerEnabled, _ := fileLoggerSettings.Key("enabled").Bool()
+	if fileLoggerEnabled {
+		fileLogger.Enabled = true
+		fileLogger.LogFile = fileLoggerSettings.Key("file").String()
+		fileLogger.MaxAge, _ = fileLoggerSettings.Key("maxAge").Int()
+		fileLogger.MaxBackups, _ = fileLoggerSettings.Key("maxBackups").Int()
+		fileLogger.MaxSizeMB, _ = fileLoggerSettings.Key("maxSizeMB").Int()
+		fileLogger.Compress, _ = fileLoggerSettings.Key("compress").Bool()
 	}
 
 	commandOutputFieldsSection := cfg.Section("command_output_fields")
@@ -88,6 +95,6 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 		fields[field.Name()] = result
 	}
 
-	return MeteringEventProducer{UseLogFile: useLogFile, LogFile: logFile, EventIDField: eventIDField,
-		EventInerval: eventInterval, TimestampField: timestampField, Fields: fields, FieldCommandPairs: commandOutputFields}, nil
+	return MeteringEventProducer{FileLogger: &fileLogger, EventIDField: eventIDField, EventInerval: eventInterval,
+		TimestampField: timestampField, Fields: fields, FieldCommandPairs: commandOutputFields}, nil
 }

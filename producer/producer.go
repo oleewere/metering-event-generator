@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	lumberjack "github.com/natefinch/lumberjack"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -40,25 +41,38 @@ func (f *MeteringJSONFormatter) Format(entry *log.Entry) ([]byte, error) {
 
 // MeteringEventProducer metering producer type which holds required configuration
 type MeteringEventProducer struct {
-	UseLogFile        bool
-	LogFile           string
 	EventInerval      int
 	Fields            log.Fields
 	EventIDField      string
 	TimestampField    string
 	IDGeneratorFields []string
 	FieldCommandPairs map[string]string
+	FileLogger        *MeteringEventFileLogger
+}
+
+// MeteringEventFileLogger holds file logger details
+type MeteringEventFileLogger struct {
+	Enabled    bool
+	LogFile    string
+	MaxSizeMB  int
+	MaxBackups int
+	MaxAge     int
+	Compress   bool
 }
 
 // Run start metering event producer
 func (p *MeteringEventProducer) Run() {
 	log.SetFormatter(new(MeteringJSONFormatter))
-	if p.UseLogFile {
-		logFile, err := os.OpenFile(p.LogFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
-		if err != nil {
-			os.Exit(1)
+	fileLogger := p.FileLogger
+	if fileLogger != nil && fileLogger.Enabled {
+		lumberjackLogger := &lumberjack.Logger{
+			Filename:   fileLogger.LogFile,
+			MaxSize:    fileLogger.MaxSizeMB,
+			MaxBackups: fileLogger.MaxBackups,
+			MaxAge:     fileLogger.MaxAge,
+			Compress:   fileLogger.Compress,
 		}
-		log.SetOutput(logFile)
+		log.SetOutput(lumberjackLogger)
 	} else {
 		log.SetOutput(os.Stdout)
 	}
