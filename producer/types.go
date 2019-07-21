@@ -43,8 +43,8 @@ type MeteringEventFileLogger struct {
 
 // MeteringCommandDetails holds command details that is used to gather a specific field
 type MeteringCommandDetails struct {
-	Command string
-	JSON    bool
+	Command    string
+	JSONFormat bool
 }
 
 // MeteringEventBufferedProcessor holds buffer and data processor for publishing events

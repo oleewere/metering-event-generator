@@ -60,7 +60,7 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 	commandOutputFieldsJSONSection := cfg.Section("command_output_fields:json")
 	commandOutputFieldsJSONKeyValues := commandOutputFieldsJSONSection.Keys()
 	for _, commandOutputField := range commandOutputFieldsJSONKeyValues {
-		commandOutputFields[commandOutputField.Name()] = MeteringCommandDetails{Command: commandOutputField.Value(), JSON: true}
+		commandOutputFields[commandOutputField.Name()] = MeteringCommandDetails{Command: commandOutputField.Value(), JSONFormat: true}
 	}
 
 	fieldsSettings := cfg.Section("fields")

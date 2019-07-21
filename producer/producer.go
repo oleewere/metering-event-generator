@@ -87,7 +87,7 @@ func (p *MeteringEventProducer) Run() {
 					output, _, err = RunLocalCommand(splitted[0], splitted[1:]...)
 				}
 				if err == nil {
-					if commandDetails.JSON {
+					if commandDetails.JSONFormat {
 						var jsonResult interface{}
 						json.Unmarshal([]byte(output), &jsonResult)
 						fields[field] = jsonResult
