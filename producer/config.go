@@ -47,11 +47,18 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 		fileLogger.Compress, _ = fileLoggerSettings.Key("compress").Bool()
 	}
 
-	commandOutputFieldsSection := cfg.Section("command_output_fields")
+	commandOutputFields := make(map[string]MeteringCommandDetails)
+
+	commandOutputFieldsSection := cfg.Section("command_output_fields:text")
 	commandOutputFieldsKeyValues := commandOutputFieldsSection.Keys()
-	commandOutputFields := make(map[string]string)
 	for _, commandOutputField := range commandOutputFieldsKeyValues {
-		commandOutputFields[commandOutputField.Name()] = commandOutputField.Value()
+		commandOutputFields[commandOutputField.Name()] = MeteringCommandDetails{Command: commandOutputField.Value()}
+	}
+
+	commandOutputFieldsJSONSection := cfg.Section("command_output_fields:json")
+	commandOutputFieldsJSONKeyValues := commandOutputFieldsJSONSection.Keys()
+	for _, commandOutputField := range commandOutputFieldsJSONKeyValues {
+		commandOutputFields[commandOutputField.Name()] = MeteringCommandDetails{Command: commandOutputField.Value(), JSON: true}
 	}
 
 	fieldsSettings := cfg.Section("fields")
@@ -61,9 +68,9 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 		fields[field.Name()] = field.Value()
 	}
 
-	embeddedJSONFieldMapFiles := cfg.Section("embedded_json_fields:map")
-	embeddedJSONFieldMapKeys := embeddedJSONFieldMapFiles.Keys()
-	for _, field := range embeddedJSONFieldMapKeys {
+	embeddedJSONFieldFiles := cfg.Section("embedded_json_fields")
+	embeddedJSONFieldKeys := embeddedJSONFieldFiles.Keys()
+	for _, field := range embeddedJSONFieldKeys {
 		fileName := field.Value()
 		jsonFile, err := os.Open(fileName)
 		defer jsonFile.Close()
@@ -73,24 +80,7 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 			os.Exit(1)
 		}
 		byteValue, _ := ioutil.ReadAll(jsonFile)
-		var result map[string]interface{}
-		json.Unmarshal([]byte(byteValue), &result)
-		fields[field.Name()] = result
-	}
-
-	embeddedJSONFieldArrayFiles := cfg.Section("embedded_json_fields:array")
-	embeddedJSONFieldArrayKeys := embeddedJSONFieldArrayFiles.Keys()
-	for _, field := range embeddedJSONFieldArrayKeys {
-		fileName := field.Value()
-		jsonFile, err := os.Open(fileName)
-		defer jsonFile.Close()
-		if err != nil {
-			fmt.Println(err)
-			jsonFile.Close()
-			os.Exit(1)
-		}
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		var result []interface{}
+		var result interface{}
 		json.Unmarshal([]byte(byteValue), &result)
 		fields[field.Name()] = result
 	}

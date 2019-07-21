@@ -60,8 +60,8 @@ func (p *MeteringEventProducer) Run() {
 		fields[p.EventIDField] = uuid.NewV4()
 		fields[p.TimestampField] = time.Now().Unix()
 		if len(p.FieldCommandPairs) > 0 {
-			for field, command := range p.FieldCommandPairs {
-				splitted := strings.Split(command, " ")
+			for field, commandDetails := range p.FieldCommandPairs {
+				splitted := strings.Split(commandDetails.Command, " ")
 				var output string
 				var err error
 				if len(splitted) == 1 {
@@ -70,7 +70,13 @@ func (p *MeteringEventProducer) Run() {
 					output, _, err = RunLocalCommand(splitted[0], splitted[1:]...)
 				}
 				if err == nil {
-					fields[field] = output
+					if commandDetails.JSON {
+						var jsonResult interface{}
+						json.Unmarshal([]byte(output), &jsonResult)
+						fields[field] = jsonResult
+					} else {
+						fields[field] = output
+					}
 				}
 			}
 		}

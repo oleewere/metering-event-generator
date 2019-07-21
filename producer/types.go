@@ -23,7 +23,7 @@ type MeteringEventProducer struct {
 	EventIDField      string
 	TimestampField    string
 	IDGeneratorFields []string
-	FieldCommandPairs map[string]string
+	FieldCommandPairs map[string]MeteringCommandDetails
 	FileLogger        *MeteringEventFileLogger
 }
 
@@ -35,4 +35,10 @@ type MeteringEventFileLogger struct {
 	MaxBackups int
 	MaxAge     int
 	Compress   bool
+}
+
+// MeteringCommandDetails holds command details that is used to gather a specific field
+type MeteringCommandDetails struct {
+	Command string
+	JSON    bool
 }
