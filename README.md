@@ -41,7 +41,7 @@ Using with docker:
 
 ```bash
 docker build -t oleewere/meteringp .
-docker run --rm oleewere/meteringp -v $(pwd)/sample:/sample --config /sample/meteringp.conf
+docker run --rm -v $(pwd)/sample:/sample oleewere/meteringp --config /sample/meteringp.conf
 ```
 
 See sample folder to check the configuration options.
