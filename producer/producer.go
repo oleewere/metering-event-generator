@@ -39,27 +39,6 @@ func (f *MeteringJSONFormatter) Format(entry *log.Entry) ([]byte, error) {
 	return append(serialized, '\n'), nil
 }
 
-// MeteringEventProducer metering producer type which holds required configuration
-type MeteringEventProducer struct {
-	EventInerval      int
-	Fields            log.Fields
-	EventIDField      string
-	TimestampField    string
-	IDGeneratorFields []string
-	FieldCommandPairs map[string]string
-	FileLogger        *MeteringEventFileLogger
-}
-
-// MeteringEventFileLogger holds file logger details
-type MeteringEventFileLogger struct {
-	Enabled    bool
-	LogFile    string
-	MaxSizeMB  int
-	MaxBackups int
-	MaxAge     int
-	Compress   bool
-}
-
 // Run start metering event producer
 func (p *MeteringEventProducer) Run() {
 	log.SetFormatter(new(MeteringJSONFormatter))
