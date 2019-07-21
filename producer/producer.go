@@ -22,6 +22,7 @@ import (
 	"time"
 
 	lumberjack "github.com/natefinch/lumberjack"
+	"github.com/oleewere/go-buffered-processor/processor"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -37,6 +38,22 @@ func (f *MeteringJSONFormatter) Format(entry *log.Entry) ([]byte, error) {
 		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
 	}
 	return append(serialized, '\n'), nil
+}
+
+// Process run local process commands on gathered metering events
+func (p *MeteringEventProducer) Process(batchContext *processor.BatchContext) error {
+	splitted := strings.Split(p.BufferedProcessor.ProcessorCommand, " ")
+	var err error
+	if len(splitted) == 1 {
+		_, _, err = RunLocalCommand(splitted[0])
+	} else {
+		_, _, err = RunLocalCommand(splitted[0], splitted[1:]...)
+	}
+	return err
+}
+
+// HandleError handle errors during time based buffer processing (it is not used by this generator)
+func (p *MeteringEventProducer) HandleError(batchContext *processor.BatchContext, err error) {
 }
 
 // Run start metering event producer
@@ -81,6 +98,10 @@ func (p *MeteringEventProducer) Run() {
 			}
 		}
 		log.WithFields(fields).Info()
+		if p.BufferedProcessor != nil {
+			batchContext := p.BufferedProcessor.BatchContext
+			processor.ProcessData(fields, batchContext, p)
+		}
 		duration := int64(p.EventInerval) * int64(time.Second)
 		time.Sleep(time.Duration(duration))
 	}

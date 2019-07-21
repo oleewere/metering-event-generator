@@ -19,8 +19,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/go-ini/ini"
+	"github.com/oleewere/go-buffered-processor/processor"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,11 +42,11 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 	fileLoggerEnabled, _ := fileLoggerSettings.Key("enabled").Bool()
 	if fileLoggerEnabled {
 		fileLogger.Enabled = true
-		fileLogger.LogFile = fileLoggerSettings.Key("file").String()
-		fileLogger.MaxAge, _ = fileLoggerSettings.Key("maxAge").Int()
-		fileLogger.MaxBackups, _ = fileLoggerSettings.Key("maxBackups").Int()
-		fileLogger.MaxSizeMB, _ = fileLoggerSettings.Key("maxSizeMB").Int()
-		fileLogger.Compress, _ = fileLoggerSettings.Key("compress").Bool()
+		fileLogger.LogFile = fileLoggerSettings.Key("file").MustString("meteringp.log")
+		fileLogger.MaxAge = fileLoggerSettings.Key("maxAge").MustInt(90)
+		fileLogger.MaxBackups = fileLoggerSettings.Key("maxBackups").MustInt(10)
+		fileLogger.MaxSizeMB = fileLoggerSettings.Key("maxSizeMB").MustInt(100)
+		fileLogger.Compress = fileLoggerSettings.Key("compress").MustBool(false)
 	}
 
 	commandOutputFields := make(map[string]MeteringCommandDetails)
@@ -85,6 +87,18 @@ func ReadProducerFromConfig(configFile string) (MeteringEventProducer, error) {
 		fields[field.Name()] = result
 	}
 
-	return MeteringEventProducer{FileLogger: &fileLogger, EventIDField: eventIDField, EventInerval: eventInterval,
+	processorSettings := cfg.Section("processor")
+	processorEnabled, _ := processorSettings.Key("enabled").Bool()
+	var bufferedProcessor *MeteringEventBufferedProcessor
+	if processorEnabled {
+		batchContext := processor.CreateDefaultBatchContext()
+		batchContext.MaxBufferSize = processorSettings.Key("maxBufferSize").MustInt(100)
+		batchContext.MaxRetries = processorSettings.Key("maxRetries").MustInt(20)
+		batchContext.RetryTimeInterval = time.Duration(processorSettings.Key("retryTimeInterval").MustInt64(10))
+		processCommand := processorSettings.Key("processCommand").String()
+		bufferedProcessor = &MeteringEventBufferedProcessor{BatchContext: batchContext, ProcessorCommand: processCommand}
+	}
+
+	return MeteringEventProducer{FileLogger: &fileLogger, BufferedProcessor: bufferedProcessor, EventIDField: eventIDField, EventInerval: eventInterval,
 		TimestampField: timestampField, Fields: fields, FieldCommandPairs: commandOutputFields}, nil
 }

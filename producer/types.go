@@ -14,7 +14,10 @@
 
 package producer
 
-import log "github.com/sirupsen/logrus"
+import (
+	"github.com/oleewere/go-buffered-processor/processor"
+	log "github.com/sirupsen/logrus"
+)
 
 // MeteringEventProducer metering producer type which holds required configuration
 type MeteringEventProducer struct {
@@ -25,6 +28,7 @@ type MeteringEventProducer struct {
 	IDGeneratorFields []string
 	FieldCommandPairs map[string]MeteringCommandDetails
 	FileLogger        *MeteringEventFileLogger
+	BufferedProcessor *MeteringEventBufferedProcessor
 }
 
 // MeteringEventFileLogger holds file logger details
@@ -41,4 +45,10 @@ type MeteringEventFileLogger struct {
 type MeteringCommandDetails struct {
 	Command string
 	JSON    bool
+}
+
+// MeteringEventBufferedProcessor holds buffer and data processor for publishing events
+type MeteringEventBufferedProcessor struct {
+	ProcessorCommand string
+	BatchContext     *processor.BatchContext
 }
